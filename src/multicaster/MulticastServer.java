@@ -38,9 +38,12 @@ public abstract class MulticastServer {
 						DatagramPacket packet = new DatagramPacket(buf, buf.length);
 						socket.receive(packet);
 					    String received = new String(packet.getData());
-					    buf = getResponse(received).getBytes();
-					    packet = new DatagramPacket(buf, buf.length, group, port);
-					    socket.send(packet);
+					    String response = getResponse(received.trim());
+					    if (response != null) {
+					    	buf = response.getBytes();
+						    packet = new DatagramPacket(buf, buf.length, group, port);
+						    socket.send(packet);
+					    }
 					}
 				} catch (Exception e) {
 					throw new RuntimeException(e);

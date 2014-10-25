@@ -48,7 +48,7 @@ public class MulticastClient {
 			    String received = new String(packet.getData());
 			    // ignore the message we have just sent
 			    if (!received.trim().equals(message)) {
-			    	result = received;
+			    	result = received.trim();
 			    	break;
 			    }
 	        }

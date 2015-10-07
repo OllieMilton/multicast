@@ -1,6 +1,5 @@
 package multicaster;
 
-import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
@@ -23,14 +22,9 @@ public abstract class MulticastServer {
 	}
 
 	protected void runServer() {
-		new Thread(new Runnable() {
-
-			@Override
-			public void run() {
-				MulticastSocket socket = null;
+		new Thread(() -> {
 				InetAddress group = null;
-				try {
-					socket = new MulticastSocket(port);
+				try (MulticastSocket socket = new MulticastSocket(port)) {
 					group = InetAddress.getByName(multicastAddress);
 					socket.joinGroup(group);
 					while (!terminated) {
@@ -45,19 +39,11 @@ public abstract class MulticastServer {
 						    socket.send(packet);
 					    }
 					}
+					socket.leaveGroup(group);
 				} catch (Exception e) {
 					throw new RuntimeException(e);
-				} finally {
-					try {
-						if (socket != null) {
-							socket.leaveGroup(group);
-						}
-					} catch (IOException e) {}
-					if (socket != null) {
-						socket.close();
-					}
 				}
-			}
+			
 		}).start();
 	}
 

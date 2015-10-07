@@ -1,6 +1,5 @@
 package multicaster;
 
-import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
@@ -30,11 +29,9 @@ public class MulticastClient {
 		if (message.length() > BUFFER_SIZE) {
 			throw new IllegalArgumentException("Message length must not exceed ["+BUFFER_SIZE+"] characters");
 		}
-		MulticastSocket socket = null;
-		InetAddress group = null;;
-		try {
+		InetAddress group = null;
+		try (MulticastSocket socket = new MulticastSocket(port)) {
 			byte[] buf = new byte[BUFFER_SIZE];
-			socket = new MulticastSocket(port);
 			group = InetAddress.getByName(multicastAddress);
 			socket.joinGroup(group);
 	        buf = message.getBytes();
@@ -52,19 +49,11 @@ public class MulticastClient {
 			    	break;
 			    }
 	        }
+	        socket.leaveGroup(group);
 		} catch (SocketTimeoutException e) {
 			throw e;
 		} catch (Exception e) {
 			throw new RuntimeException(e);
-		} finally {
-			try {
-				if (socket != null) {
-					socket.leaveGroup(group);
-				}
-			} catch (IOException e) {}
-			if (socket != null) {
-				socket.close();
-			}
 		}
 		return result;
 	}

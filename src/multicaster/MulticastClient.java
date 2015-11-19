@@ -7,7 +7,6 @@ import java.net.SocketTimeoutException;
 
 public class MulticastClient {
 
-	private static final int BUFFER_SIZE = 256;
 	private int port;
 	private String multicastAddress;
 
@@ -26,26 +25,28 @@ public class MulticastClient {
 
 	public String send(String message, int timeoutMillis) throws SocketTimeoutException {
 		String result = null;
-		if (message.length() > BUFFER_SIZE) {
-			throw new IllegalArgumentException("Message length must not exceed ["+BUFFER_SIZE+"] characters");
+		if (message.length() > MCastConstants.BUFFER_SIZE-MCastConstants.PREFIX_LENGTH) {
+			throw new IllegalArgumentException("Message length must not exceed ["+(MCastConstants.BUFFER_SIZE-MCastConstants.PREFIX_LENGTH)+"] characters");
 		}
 		InetAddress group = null;
 		try (MulticastSocket socket = new MulticastSocket(port)) {
-			byte[] buf = new byte[BUFFER_SIZE];
+			byte[] buf = new byte[MCastConstants.BUFFER_SIZE];
 			group = InetAddress.getByName(multicastAddress);
 			socket.joinGroup(group);
+			message = MCastConstants.CLIENT_OUT + message;
 	        buf = message.getBytes();
 	        DatagramPacket packet = new DatagramPacket(buf, buf.length, group, port);
 	        socket.send(packet);
 	        while (true) {
-	        	buf = new byte[BUFFER_SIZE];
+	        	buf = new byte[MCastConstants.BUFFER_SIZE];
 			    packet = new DatagramPacket(buf, buf.length);
 			    socket.setSoTimeout(timeoutMillis);
 			    socket.receive(packet);
 			    String received = new String(packet.getData());
 			    // ignore the message we have just sent
-			    if (!received.trim().equals(message)) {
-			    	result = received.trim();
+			    received = received.trim();
+			    if (!received.equals(message) && received.startsWith(MCastConstants.SERVER_OUT)) {
+			    	result = received.substring(MCastConstants.PREFIX_LENGTH);
 			    	break;
 			    }
 	        }

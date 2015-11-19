@@ -31,12 +31,16 @@ public abstract class MulticastServer {
 						byte[] buf = new byte[BUFFER_SIZE];
 						DatagramPacket packet = new DatagramPacket(buf, buf.length);
 						socket.receive(packet);
-					    String received = new String(packet.getData());
-					    String response = getResponse(received.trim());
-					    if (response != null) {
-					    	buf = response.getBytes();
-						    packet = new DatagramPacket(buf, buf.length, group, port);
-						    socket.send(packet);
+					    String received = new String(packet.getData()).trim();
+					    if (received.startsWith(MCastConstants.CLIENT_OUT)) {
+					    	received = received.substring(MCastConstants.PREFIX_LENGTH);
+					    	String response = getResponse(received);
+						    if (response != null) {
+						    	response = MCastConstants.SERVER_OUT+response;
+						    	buf = response.getBytes();
+							    packet = new DatagramPacket(buf, buf.length, group, port);
+							    socket.send(packet);
+						    }
 					    }
 					}
 					socket.leaveGroup(group);

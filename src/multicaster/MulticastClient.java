@@ -42,9 +42,8 @@ public class MulticastClient {
 			    packet = new DatagramPacket(buf, buf.length);
 			    socket.setSoTimeout(timeoutMillis);
 			    socket.receive(packet);
-			    String received = new String(packet.getData());
+			    String received = new String(packet.getData()).trim();
 			    // ignore the message we have just sent
-			    received = received.trim();
 			    if (!received.equals(message) && received.startsWith(MCastConstants.SERVER_OUT)) {
 			    	result = received.substring(MCastConstants.PREFIX_LENGTH);
 			    	break;
